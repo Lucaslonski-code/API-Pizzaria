@@ -1,24 +1,17 @@
 
 import express from "express";
-import Empresa from "../models/Empresa.js";
+
+import { criarEmpresa, listarEmpresas, buscarEmpresaPorId, atualizarEmpresa, deletarEmpresa } from "../controllers/empresaController.js";
+import validateId from "../middlewares/validateId.js";
 
 const router = express.Router();
 
-router.post("/empresa",
-  async (req, res) => {
-    try {
-      const empresa =
-        await Empresa.create(req.body);
-
-      return res.status(201).json(
-        empresa
-      );
-    } catch (error) {
-      return res.status(500).json({
-        erro: error.message
-      });
-    }
-  }
-);
+router.post( "/empresa", criarEmpresa );
+router.get( "/empresa", listarEmpresas );
+// empresa por id com middleware: validateId
+router.route("/empresa/:id")
+  .get(validateId, buscarEmpresaPorId)
+  .put(validateId, atualizarEmpresa)
+  .delete(validateId, deletarEmpresa);
 
 export default router;
