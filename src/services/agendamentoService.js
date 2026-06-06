@@ -47,6 +47,30 @@ export async function criarAgendamentoService(
 
   }
 
+  if (
+    cliente.empresaId.toString()
+    !==
+    empresa._id.toString()
+  ) {
+
+    throw new Error(
+      "Cliente não pertence à empresa"
+    );
+
+  }
+
+  if (
+    servico.empresaId.toString()
+    !==
+    empresa._id.toString()
+  ) {
+
+    throw new Error(
+      "Serviço não pertence à empresa"
+    );
+
+  }
+
   return await Agendamento.create(
     dados
   );
