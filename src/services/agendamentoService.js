@@ -1,4 +1,9 @@
 
+import {
+  criarEventoGoogle
+}
+  from "../integrations/google/googleCalendar.js";
+
 import Agendamento from "../models/Agendamento.js";
 import Empresa from "../models/Empresa.js";
 import Cliente from "../models/Cliente.js";
@@ -85,10 +90,52 @@ export async function criarAgendamentoService(
 
   }
 
-  return await Agendamento.create(
-    dados
+  const agendamento =
+    await Agendamento.create(
+      dados
+    );
+
+const inicio =
+  new Date(
+    agendamento.dataHora
   );
 
+const fim =
+  new Date(
+    inicio
+  );
+
+fim.setMinutes(
+
+  fim.getMinutes() +
+
+  servico.duracaoMinutos
+
+);
+
+await criarEventoGoogle(
+
+  empresa._id,
+
+  {
+
+    summary:
+      `${cliente.nome} - ${servico.nome}`,
+
+    description:
+      agendamento.observacoes || "",
+
+    start:
+      inicio.toISOString(),
+
+    end:
+      fim.toISOString()
+      
+    }
+
+  );
+
+return agendamento;
 }
 
 export async function listarAgendamentosService() {

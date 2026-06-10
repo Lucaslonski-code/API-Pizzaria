@@ -16,8 +16,6 @@ const empresaSchema = new mongoose.Schema(
 
     sheetId: String,
 
-    calendarId: String,
-
     ativa: {
       type: Boolean,
       default: true
