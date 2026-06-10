@@ -1,5 +1,13 @@
 
 import {
+  deletarEventoGoogle
+} from "../integrations/google/googleCalendar.js";
+
+import {
+  atualizarEventoGoogle
+} from "../integrations/google/googleCalendar.js";
+
+import {
   criarEventoGoogle
 }
   from "../integrations/google/googleCalendar.js";
@@ -113,6 +121,7 @@ fim.setMinutes(
 
 );
 
+const eventoGoogle =
 await criarEventoGoogle(
 
   empresa._id,
@@ -134,6 +143,11 @@ await criarEventoGoogle(
     }
 
   );
+
+  agendamento.googleEventId =
+  eventoGoogle.id;
+
+await agendamento.save();
 
 return agendamento;
 }
@@ -163,14 +177,77 @@ export async function atualizarAgendamentoService(
   dados
 ) {
 
-  return await Agendamento.findByIdAndUpdate(
-    id,
-    dados,
-    {
-      returnDocument: "after",
-      runValidators: true
-    }
+  const agendamento =
+    await Agendamento.findByIdAndUpdate(
+      id,
+      dados,
+      {
+        returnDocument: "after",
+        runValidators: true
+      }
+    );
+
+  if (!agendamento) {
+
+    throw new Error(
+      "Agendamento não encontrado"
+    );
+
+  }
+
+  const cliente =
+    await Cliente.findById(
+      agendamento.clienteId
+    );
+
+  const servico =
+    await Servico.findById(
+      agendamento.servicoId
+    );
+
+  const inicio =
+    new Date(
+      agendamento.dataHora
+    );
+
+  const fim =
+    new Date(
+      inicio
+    );
+
+  fim.setMinutes(
+
+    fim.getMinutes() +
+
+    servico.duracaoMinutos
+
   );
+
+  await atualizarEventoGoogle(
+
+    agendamento.empresaId,
+
+    agendamento.googleEventId,
+
+    {
+
+      summary:
+        `${cliente.nome} - ${servico.nome}`,
+
+      description:
+        agendamento.observacoes || "",
+
+      start:
+        inicio.toISOString(),
+
+      end:
+        fim.toISOString()
+
+    }
+
+  );
+
+  return agendamento;
 
 }
 
@@ -178,9 +255,36 @@ export async function deletarAgendamentoService(
   id
 ) {
 
-  return await Agendamento.findByIdAndDelete(
+  const agendamento =
+    await Agendamento.findById(id);
+
+  if (!agendamento) {
+
+    throw new Error(
+      "Agendamento não encontrado"
+    );
+
+  }
+
+  if (agendamento.googleEventId) {
+
+    await deletarEventoGoogle(
+
+      agendamento.empresaId,
+
+      agendamento.googleEventId
+
+    );
+
+  }
+
+  await Agendamento.findByIdAndDelete(
     id
   );
+
+  return {
+    sucesso: true
+  };
 
 }
 

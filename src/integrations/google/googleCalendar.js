@@ -78,3 +78,135 @@ export async function criarEventoGoogle(
   return evento.data;
 
 }
+
+export async function atualizarEventoGoogle(
+  empresaId,
+  googleEventId,
+  dadosEvento
+) {
+
+  const empresa =
+    await Empresa.findById(
+      empresaId
+    );
+
+  if (!empresa) {
+
+    throw new Error(
+      "Empresa não encontrada"
+    );
+
+  }
+
+  if (!empresa.googleConnected) {
+
+    throw new Error(
+      "Google Calendar não conectado"
+    );
+
+  }
+
+  oauth2Client.setCredentials({
+
+    refresh_token:
+      empresa.googleRefreshToken
+
+  });
+
+  const calendar =
+    google.calendar({
+
+      version: "v3",
+
+      auth: oauth2Client
+
+    });
+
+  const evento =
+    await calendar.events.update({
+
+      calendarId:
+        empresa.googleCalendarId,
+
+      eventId:
+        googleEventId,
+
+      requestBody: {
+
+        summary:
+          dadosEvento.summary,
+
+        description:
+          dadosEvento.description,
+
+        start: {
+          dateTime:
+            dadosEvento.start
+        },
+
+        end: {
+          dateTime:
+            dadosEvento.end
+        }
+
+      }
+
+    });
+
+  return evento.data;
+
+}
+
+export async function deletarEventoGoogle(
+  empresaId,
+  googleEventId
+) {
+
+  const empresa =
+    await Empresa.findById(
+      empresaId
+    );
+
+  if (!empresa) {
+
+    throw new Error(
+      "Empresa não encontrada"
+    );
+
+  }
+
+  if (!empresa.googleConnected) {
+
+    throw new Error(
+      "Google Calendar não conectado"
+    );
+
+  }
+
+  oauth2Client.setCredentials({
+
+    refresh_token:
+      empresa.googleRefreshToken
+
+  });
+
+  const calendar =
+    google.calendar({
+
+      version: "v3",
+
+      auth: oauth2Client
+
+    });
+
+  await calendar.events.delete({
+
+    calendarId:
+      empresa.googleCalendarId,
+
+    eventId:
+      googleEventId
+
+  });
+
+}

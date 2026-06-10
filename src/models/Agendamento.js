@@ -41,7 +41,12 @@ const agendamentoSchema =
     observacoes: {
       type: String,
       default: ""
-    }
+    },
+
+    googleEventId: {
+      type: String,
+      default: ""
+}
 
   }, {
     timestamps: true
